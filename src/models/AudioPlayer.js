@@ -43,7 +43,7 @@ class AudioPlayer {
         this.player.src = src;
         this.player.onloadedmetadata = () => {
             this.gui = {
-                totalTime: { value: this.player.duration, DOMElement: this.gui.totalTime.DOMElement },
+                totalTime: { value: (this.player.duration), DOMElement: this.gui.totalTime.DOMElement },
                 currentTime: { value: 0, DOMElement: this.gui.currentTime.DOMElement }
             }
         }
@@ -115,7 +115,7 @@ class AudioPlayer {
                 toAssign[key] = elements[key];
                 if (Object.keys(actions).length > 0) {
                     if (actions.hasOwnProperty(key)) {
-                        console.log(key);
+                        //console.log(key);
                         this._addClickEvent(toAssign[key], actions[key]);
                     }
                 }
@@ -159,16 +159,19 @@ class AudioPlayer {
                 let newCurrentTime = this.gui.totalTime.value * (x/w);
                 this.player.currentTime = newCurrentTime;
                 this.gui = {
-                    currentTime: {value: newCurrentTime, DOMElement: this.gui.currentTime.DOMElement}
+                    currentTime: {value: this.getValueReloj(newCurrentTime), DOMElement: this.gui.currentTime.DOMElement}
+                    
                 }
             }
         }
+    
         this._assignValues(this._gui, elments, actions);
         this._updateBasigGUIElement(this.gui.totalTime);
         this._updateBasigGUIElement(this.gui.currentTime);
     }
 
     _updateBasigGUIElement(el) {
+        console.log(el);
         if (el.DOMElement instanceof HTMLElement) {
             el.DOMElement.innerHTML = el.value;
         }
@@ -176,5 +179,13 @@ class AudioPlayer {
 
     get gui() {
         return this._gui;
+    }
+
+    getValueReloj(val){        
+        let minute= Math.floor(val / 60);
+        let second=val%60;  
+        var result= minute + ':' + ("0" + second).slice(-2);
+        return result;
+        
     }
 }
