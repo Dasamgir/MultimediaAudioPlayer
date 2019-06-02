@@ -54,12 +54,17 @@ class AudioPlayer {
             }
             //Uso de variable auxiliar para separar el valor real.
             var currentAux={ value: this.player.currentTime, DOMElement: this.gui.currentTime.DOMElement };
-            console.log(this.player.duration);
             // cambio de valor this.gui.currentTime.value x this.player.duration, para recuperar valor inicial.
             var [totalTime, currentAux] = [this.player.duration, currentAux.value]; // Antes -> this.gui.currentTime.value
             var progress = (currentAux / totalTime) * 100;
             let pBar = this.gui.progressBar.DOMElement.querySelector("div");
             pBar.style.width = `${progress}%`;
+
+             //Evalua si termina la cancion para colocar volver a icon Play, event Paused
+             if(this.player.ended){
+                this.player.pause();
+                this._toggleIcon(this.buttons.playPause, "fa-play", "fa-pause");
+             }
         }
     }
 
@@ -100,6 +105,7 @@ class AudioPlayer {
     }
 
     _toggleIcon(el, aClass, bClass) {
+        console.log("aqui");
         let i = el.querySelector("i");
         if (i.classList.contains(aClass)) {
             var [a, b] = [aClass, bClass];
