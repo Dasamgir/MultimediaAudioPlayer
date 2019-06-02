@@ -5,7 +5,7 @@ class AudioPlayer {
         this.songs = [];
         this.queue = [];
         this.player = new Audio();
-        let src = "songs/1.mp3";
+        let src = "songs/David Guetta - Titanium ft. Sia.mp3";
 
         this._gui = {
             progressBar: { value: null, DOMElement: null },
@@ -43,17 +43,21 @@ class AudioPlayer {
         this.player.src = src;
         this.player.onloadedmetadata = () => {
             this.gui = {
-                totalTime: { value: (this.player.duration), DOMElement: this.gui.totalTime.DOMElement },
-                currentTime: { value: 0, DOMElement: this.gui.currentTime.DOMElement }
+                totalTime: { value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement },
+                currentTime: { value: this.getValueReloj(0), DOMElement: this.gui.currentTime.DOMElement }
             }
         }
         this.player.ontimeupdate = () => {
-            //console.log(this.player.currentTime);
             this.gui = {
-                currentTime: { value: this.player.currentTime, DOMElement: this.gui.currentTime.DOMElement }
+                currentTime: { value: this.getValueReloj(this.player.currentTime), DOMElement: this.gui.currentTime.DOMElement },
+                totalTime :{value: this.getValueReloj(this.player.duration),DOMElement: this.gui.totalTime.DOMElement }
             }
-            var [totalTime, currentTime] = [this.gui.totalTime.value, this.gui.currentTime.value];
-            var progress = (currentTime / totalTime) * 100;
+            //Uso de variable auxiliar para separar el valor real.
+            var currentAux={ value: this.player.currentTime, DOMElement: this.gui.currentTime.DOMElement };
+            console.log(this.player.duration);
+            // cambio de valor this.gui.currentTime.value x this.player.duration, para recuperar valor inicial.
+            var [totalTime, currentAux] = [this.player.duration, currentAux.value]; // Antes -> this.gui.currentTime.value
+            var progress = (currentAux / totalTime) * 100;
             let pBar = this.gui.progressBar.DOMElement.querySelector("div");
             pBar.style.width = `${progress}%`;
         }
@@ -156,11 +160,13 @@ class AudioPlayer {
             progressBar: (e) => {
                 let x = e.offsetX;
                 let w = this.gui.progressBar.DOMElement.offsetWidth;
-                let newCurrentTime = this.gui.totalTime.value * (x/w);
+                // cambio de variable this.gui.totalTime x this.player.duration
+                let newCurrentTime = this.player.duration * (x/w); 
                 this.player.currentTime = newCurrentTime;
+                
                 this.gui = {
-                    currentTime: {value: this.getValueReloj(newCurrentTime), DOMElement: this.gui.currentTime.DOMElement}
-                    
+                    currentTime: {value: this.getValueReloj(newCurrentTime), DOMElement: this.gui.currentTime.DOMElement},
+                    totalTime: {value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement}
                 }
             }
         }
@@ -171,7 +177,7 @@ class AudioPlayer {
     }
 
     _updateBasigGUIElement(el) {
-        console.log(el);
+        //console.log(el);
         if (el.DOMElement instanceof HTMLElement) {
             el.DOMElement.innerHTML = el.value;
         }
@@ -182,10 +188,9 @@ class AudioPlayer {
     }
 
     getValueReloj(val){        
-        let minute= Math.floor(val / 60);
-        let second=val%60;  
-        var result= minute + ':' + ("0" + second).slice(-2);
+        let minute= val>60 ? Math.floor(val / 60) : 0;
+        let second= Math.floor(val%60);  
+        var result= (minute<10 ? '0'+ minute: minute) + ':' + (second<10 ? '0'+second: second);
         return result;
-        
     }
 }
