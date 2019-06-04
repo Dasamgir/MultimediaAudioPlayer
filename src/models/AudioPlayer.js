@@ -2,7 +2,7 @@ class AudioPlayer {
 
     constructor(params) {
 
-        this.songs = [];
+        this.songs = []; //[{name:"Adele - Someone Like You.mp3", artist:"Adele", cover:"", file:"songs/Adele - Someone Like You.mp3"},{name:"Adele.mp3", artist:"Adele", cover:"", file:"songs/Adele.mp3"}];
         this.queue = [];
         this.player = new Audio();
         let src = "songs/David Guetta - Titanium ft. Sia.mp3";
@@ -30,13 +30,13 @@ class AudioPlayer {
             add: null
         }
 
-        this._loadSong(src);
-
+        this.addSong();
+        this._loadSong(this.songs[0].file);
+        
         if (params.hasOwnProperty("buttons")) {
             var { queue, volume, back, playPause, next, add } = params.buttons;
             this._initButtons(queue, volume, back, playPause, next, add);
         }
-
     }
 
     _loadSong(src) {
@@ -64,8 +64,32 @@ class AudioPlayer {
              if(this.player.ended){
                 this.player.pause();
                 this._toggleIcon(this.buttons.playPause, "fa-play", "fa-pause");
+
+                var nextSong = this.selectSong(1);
+                this.player.src = nextSong;
+                this.player.onloadedmetadata = () => {
+                    this.gui = {
+                        totalTime: { value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement },
+                        currentTime: { value: this.getValueReloj(0), DOMElement: this.gui.currentTime.DOMElement }
+                    }
+                }
+                console.log(this.player);
              }
         }
+
+        //Prueba
+        console.log(this.songs);
+    }
+    //Seleccionar cancion por index
+    selectSong(numSong){
+        return this.songs[numSong].file;
+    }
+    // Cargar lista canciones
+    addSong(){
+        this.songs = [
+            {name:"Someone Like You", artist:"Adele", cover:"", file:"songs/Adele - Someone Like You.mp3"},
+            {name:"Titanium ft. Sia", artist:"David Guetta", cover:"", file:"songs/David Guetta - Titanium ft. Sia.mp3"}
+        ];
     }
 
     _initGUI(...params) {
@@ -105,7 +129,6 @@ class AudioPlayer {
     }
 
     _toggleIcon(el, aClass, bClass) {
-        console.log("aqui");
         let i = el.querySelector("i");
         if (i.classList.contains(aClass)) {
             var [a, b] = [aClass, bClass];
