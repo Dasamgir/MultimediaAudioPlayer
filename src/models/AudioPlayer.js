@@ -31,7 +31,7 @@ class AudioPlayer {
         }
 
         this.addSong();
-        this._loadSong(this.songs[0].file);
+        this._loadSong(this.songs[0]);
         
         if (params.hasOwnProperty("buttons")) {
             var { queue, volume, back, playPause, next, add } = params.buttons;
@@ -39,12 +39,14 @@ class AudioPlayer {
         }
     }
 
-    _loadSong(src) {
-        this.player.src = src;
+    _loadSong(srcSong) {
+        this.player.src = srcSong.file;
         this.player.onloadedmetadata = () => {
             this.gui = {
                 totalTime: { value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement },
-                currentTime: { value: this.getValueReloj(0), DOMElement: this.gui.currentTime.DOMElement }
+                currentTime: { value: this.getValueReloj(0), DOMElement: this.gui.currentTime.DOMElement },
+                songName: {value: srcSong.name, DOMElement: this.gui.songName.DOMElement},
+                artistName: {value: srcSong.artist, DOMElement: this.gui.artistName.DOMElement}
             }
         }
         this.player.ontimeupdate = () => {
@@ -59,36 +61,42 @@ class AudioPlayer {
             var progress = (currentAux / totalTime) * 100;
             let pBar = this.gui.progressBar.DOMElement.querySelector("div");
             pBar.style.width = `${progress}%`;
+            //imagen
 
-             //Evalua si termina la cancion para colocar volver a icon Play, event Paused
-             if(this.player.ended){
+
+
+             //Evalua si termina la cancion para volver a icon Play, event Paused
+            if(this.player.ended){
                 this.player.pause();
                 this._toggleIcon(this.buttons.playPause, "fa-play", "fa-pause");
 
                 var nextSong = this.selectSong(1);
-                this.player.src = nextSong;
+                console.log(this.player);
+                this.player.src = nextSong.file;                
                 this.player.onloadedmetadata = () => {
                     this.gui = {
                         totalTime: { value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement },
-                        currentTime: { value: this.getValueReloj(0), DOMElement: this.gui.currentTime.DOMElement }
+                        currentTime: { value: this.getValueReloj(0), DOMElement: this.gui.currentTime.DOMElement },
+                        songName: {value: nextSong.name, DOMElement: this.gui.songName.DOMElement },
+                        artistName: {value: nextSong.artist, DOMElement: this.gui.artistName.DOMElement }
                     }
                 }
-                console.log(this.player);
              }
+             //console.log(this.player)
         }
-
-        //Prueba
-        console.log(this.songs);
     }
     //Seleccionar cancion por index
     selectSong(numSong){
-        return this.songs[numSong].file;
+        //let lblName= this.gui.songName.DOMElement.querySelector("div");
+        //lblName.songName="Prueba name song";
+        //console.log(lblName);
+        return this.songs[numSong];
     }
     // Cargar lista canciones
     addSong(){
         this.songs = [
-            {name:"Someone Like You", artist:"Adele", cover:"", file:"songs/Adele - Someone Like You.mp3"},
-            {name:"Titanium ft. Sia", artist:"David Guetta", cover:"", file:"songs/David Guetta - Titanium ft. Sia.mp3"}
+            {name:"Someone Like You", artist:"Adele", cover:"", file:"songs/1.mp3"},
+            {name:"Titanium ft. Sia", artist:"David Guetta", cover:"", file:"songs/1.mp3"}
         ];
     }
 
@@ -172,8 +180,20 @@ class AudioPlayer {
                 this._toggleIcon(this.buttons.volume, "fa-volume-up", "fa-volume-mute");
 
             },
-            back: () => false,
-            next: () => false,
+            back: () => {
+                let rankVariable = 5;
+                if(this.player.currentTime - rankVariable >= 0)
+                {
+                    this.player.currentTime = this.player.currentTime - rankVariable;
+                }
+            },
+            next: () => {
+                let rankVariable = 5;
+                if(this.player.currentTime + rankVariable < this.player.duration)
+                {
+                    this.player.currentTime = this.player.currentTime + rankVariable;
+                }
+            },
             add: () => false,
 
         }
@@ -195,7 +215,7 @@ class AudioPlayer {
                 
                 this.gui = {
                     currentTime: {value: this.getValueReloj(newCurrentTime), DOMElement: this.gui.currentTime.DOMElement},
-                    totalTime: {value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement}
+                    totalTime: {value: this.getValueReloj(this.player.duration), DOMElement: this.gui.totalTime.DOMElement},
                 }
             }
         }
@@ -203,6 +223,8 @@ class AudioPlayer {
         this._assignValues(this._gui, elments, actions);
         this._updateBasigGUIElement(this.gui.totalTime);
         this._updateBasigGUIElement(this.gui.currentTime);
+        this._updateBasigGUIElement(this.gui.songName);
+        this._updateBasigGUIElement(this.gui.artistName);
     }
 
     _updateBasigGUIElement(el) {
